@@ -1,26 +1,51 @@
-import React from 'react';
+import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import Student from './components/Student';
+import AddStudent from './components/AddStudent';
+// import 'connect' HOC from 'react-redux'
+import { connect } from 'react-redux';
+import axios from 'axios';
+import * as actions from './redux/actions/actions';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+
+  componentDidMount() {
+    axios.get('http://localhost:8000/students')
+      .then(response => {
+        this.props.addAllStudents(response.data);
+      })
+  }
+
+  render() {
+    const { students } = this.props;
+    return (
+      <main className="App">
+        { !students 
+          ? null
+          : students.map((student, index) => (
+              <Student info={student} key={index} />
+          )) 
+        }
+
+        <AddStudent addStudentToList={this.addStudent} />
+      </main>
+    )
+  }
 }
 
-export default App;
+const mapStateToProps = state => {
+  return{ 
+    students: state, 
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    addAllStudents: allStudents => {
+      dispatch(actions.addAllStudents(allStudents))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
